@@ -4,7 +4,9 @@ import (
 	"log"
 	"os"
 
+	"github.com/maximakhmatovich/go_http-final/internal/handlers"
 	"github.com/maximakhmatovich/go_http-final/internal/server"
+	"github.com/maximakhmatovich/go_http-final/internal/service"
 )
 
 func main() {
@@ -15,6 +17,8 @@ func main() {
 	defer logsFile.Close()
 
 	logger := log.New(logsFile, "SERVER: ", log.LstdFlags|log.Lshortfile|log.Lmicroseconds)
+	service.SetLogger(logger)
+	handlers.SetLogger(logger)
 
 	newServer := server.NewServer(logger)
 
