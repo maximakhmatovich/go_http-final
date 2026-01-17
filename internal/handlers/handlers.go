@@ -47,7 +47,7 @@ func UploadHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	file, _, err := r.FormFile("myFile")
+	file, header, err := r.FormFile("myFile")
 	if err != nil {
 		logger.Println(err)
 		http.Error(w, "Ошибка при получении файла", http.StatusInternalServerError)
@@ -70,8 +70,13 @@ func UploadHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	newFileName := filepath.Join("uploads", header.Filename)
-	os.MkdirAll("uploads", 0755)
+	newFileName := filepath.Join("uploads", fmt.Sprintf("%d%s", time.Now().Unix(), filepath.Ext(header.Filename)))
+
+	if err := os.MkdirAll("uploads", 0755); err != nil {
+		logger.Println(err)
+		http.Error(w, "Ошибка при создании папки uploads", http.StatusInternalServerError)
+		return
+	}
 
 	localFile, err := os.Create(newFileName)
 	if err != nil {
@@ -81,9 +86,13 @@ func UploadHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer localFile.Close()
 
-	localFile.WriteString(fmt.Sprintf("%s\n", result))
+	if _, err := localFile.WriteString(fmt.Sprintf("%s\n", result)); err != nil {
+		logger.Println(err)
+		http.Error(w, "Ошибка при записи в файл", http.StatusInternalServerError)
+		return
+	}
 
-	w.Header().Set("Content-Type", "text/plain")
+	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(result))
 
