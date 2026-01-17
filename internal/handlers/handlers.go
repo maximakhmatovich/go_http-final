@@ -70,7 +70,9 @@ func UploadHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	newFileName := fmt.Sprintf("%s%s", time.Now().UTC().String(), filepath.Ext("myFile"))
+	newFileName := filepath.Join("uploads", header.Filename)
+	os.MkdirAll("uploads", 0755)
+
 	localFile, err := os.Create(newFileName)
 	if err != nil {
 		logger.Println(err)
